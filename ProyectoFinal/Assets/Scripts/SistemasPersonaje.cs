@@ -2,10 +2,12 @@ using UnityEngine;
 
 public class SistemasPersonaje : MonoBehaviour
 {
-    internal ControlesPersonaje _Controles;
+    internal ControlesPersonaje Controles;
+    internal MovimientoPersonaje Movimiento;
 
     private void Awake()
     {
-        TryGetComponent(out _Controles);
+        TryGetComponent(out Controles);
+        TryGetComponent(out Movimiento);
     }
 }
