@@ -1,5 +1,3 @@
-[README.md](https://github.com/user-attachments/files/23614489/README.md)
-
 # Memorias
 
 Memorias es un videojuego en proceso de creación por Mario Villanueva, desarrollado en el marco del módulo de Programación de Videojuegos del máster en Desarrollo de Videojuegos del Centro de Estudios de Innovación (CEI.) de Madrid.
