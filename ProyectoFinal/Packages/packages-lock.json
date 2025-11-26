@@ -312,9 +312,9 @@
       "url": "https://packages.unity.com"
     },
     "com.whinarn.unitymeshsimplifier": {
-      "version": "file:C:/Users/mario/Downloads/UnityMeshSimplifier-master/UnityMeshSimplifier-master",
+      "version": "file:UnityMeshSimplifier-master",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {}
     },
     "com.unity.modules.accessibility": {
