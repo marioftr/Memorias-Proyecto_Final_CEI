@@ -21,6 +21,8 @@ public class ControlesPersonaje : MonoBehaviour
     private void _DeteccionControles()
     {
         _Personaje.Movimiento.DireccionXZ = _Controles.Player.Move.ReadValue<Vector2>();
+        _Personaje.Camara.EjesRaton = _Controles.Player.Look.ReadValue<Vector2>();
+
         if (_Controles.Player.Sprint.WasPressedThisFrame())
         {
             _Personaje.Movimiento.SistemaCorrer(true);
