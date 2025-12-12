@@ -8,112 +8,137 @@ public class CargaDardos : MonoBehaviour
     [SerializeField] private Image _IMGCargaVertical;
     [SerializeField] private Image _IMGCargaHorizontalIzquierda;
     [SerializeField] private Image _IMGCargaHorizontalDerecha;
-    [SerializeField] private TMP_Text _TextoCarga;
+    public TMP_Text TextoCarga;
 
-    [Header("Carga Vertical")]
-    [SerializeField] private bool _EsCargaVertical = false;
-    [SerializeField] private bool _CargaVerticalSubiendo = true;
-    [SerializeField] private float _CargaVertical = 0f;
-    [SerializeField] private float _VelocidadCargaVertical = 100f;
+    [SerializeField] private float _Carga;
 
     [Header("Carga Horizontal")]
-    [SerializeField] private bool _EsCargaHorizontal = false;
+    public float CargaHorizontal = 0f;
+    public bool CargaHorizontalActiva = false;
+    public bool DebeMoverseHorizontal = false;
     [SerializeField] private bool _CargaHorizontalSubiendo = true;
-    [SerializeField] private float _CargaHorizontal = 50f;
     [SerializeField] private float _VelocidadCargaHorizontal = 100f;
+
+    [Header("Carga Vertical")]
+    public float CargaVertical = 0f;
+    public bool CargaVerticalActiva = false;
+    public bool DebeMoverseVertical = false;
+    [SerializeField] private bool _CargaVerticalSubiendo = true;
+    [SerializeField] private float _VelocidadCargaVertical = 100f;
 
     private void Start()
     {
-        _CargaHorizontal = 50f;
-        _IMGCargaHorizontalIzquierda.fillAmount = (_CargaHorizontal - 2f) / 100f;
-        _IMGCargaHorizontalDerecha.fillAmount = (98f - _CargaHorizontal) / 100f;
-
-        _EsCargaHorizontal = true;
+        _Carga = 0f;
+        _IMGCargaVertical.fillAmount = 0f;
+        _IMGCargaHorizontalIzquierda.fillAmount = 0.48f;
+        _IMGCargaHorizontalIzquierda.fillAmount = 0.48f;
     }
     private void Update()
     {
-        if (_EsCargaVertical)
+        if (DebeMoverseHorizontal)
         {
-            CargaVerticalActiva();
+            MovimientoCargaHorizontal();
         }
-        if (_EsCargaHorizontal)
+        if (DebeMoverseVertical)
         {
-            CargaHorizontalActiva();
+            MovimientoCargaVertical();
         }
     }
 
     // CARGA HORIZONTAL
-    public void CargaHorizontalActiva()
+    public void MovimientoCargaHorizontal()
     {
+        if (!CargaHorizontalActiva) return;
         if (_CargaHorizontalSubiendo)
         {
-            _CargaHorizontal += Time.deltaTime * _VelocidadCargaHorizontal;
-            if (_CargaHorizontal > 100)
+            _Carga += Time.deltaTime * _VelocidadCargaHorizontal;
+            if (_Carga > 100)
             {
                 _CargaHorizontalSubiendo = false;
-                _CargaHorizontal = 100;
+                _Carga = 100;
             }
         }
         else
         {
-            _CargaHorizontal -= Time.deltaTime * _VelocidadCargaHorizontal;
-            if (_CargaHorizontal < 0)
+            _Carga -= Time.deltaTime * _VelocidadCargaHorizontal;
+            if (_Carga < 0)
             {
                 _CargaHorizontalSubiendo = true;
-                _CargaHorizontal = 0;
+                _Carga = 0;
             }
         }
-        _IMGCargaHorizontalIzquierda.fillAmount = (_CargaHorizontal - 2f) / 100f;
-        _IMGCargaHorizontalDerecha.fillAmount = (98f - _CargaHorizontal) / 100f;
+        _IMGCargaHorizontalIzquierda.fillAmount = (_Carga - 2f) / 100f;
+        _IMGCargaHorizontalDerecha.fillAmount = (98f - _Carga) / 100f;
     }
     public void InicioCargaHorizontal()
     {
-        _EsCargaHorizontal = true;
-        _CargaHorizontal = 50;
-        //_TextoCarga.text = "";
+        if (!CargaHorizontalActiva) return;
+        DebeMoverseHorizontal = true;
+        _Carga = 50f;
+        _IMGCargaHorizontalIzquierda.fillAmount = (_Carga - 2f) / 100f;
+        _IMGCargaHorizontalDerecha.fillAmount = (98f - _Carga) / 100f;
     }
     public void FinCargaHorizontal()
     {
-        _EsCargaHorizontal = false;
-        //_TextoCarga.text = _CargaHorizontal.ToString("F0");
+        if (!CargaHorizontalActiva) return;
+        DebeMoverseHorizontal = false;
+        TextoCarga.text = "";
         _CargaHorizontalSubiendo = true;
+        GuardarCargaHorizontal(_Carga);
+        CargaHorizontalActiva = false;
+    }
+    private void GuardarCargaHorizontal(float cargaHorizontal)
+    {
+        CargaHorizontal = cargaHorizontal;
+        print(CargaHorizontal.ToString("F0"));
+        _Carga = 0;
     }
 
     // CARGA VERTICAL
-    public void CargaVerticalActiva()
+    public void MovimientoCargaVertical()
     {
+        if (!CargaVerticalActiva) return;
         if (_CargaVerticalSubiendo)
         {
-            _CargaVertical += Time.deltaTime * _VelocidadCargaVertical;
+            _Carga += Time.deltaTime * _VelocidadCargaVertical;
 
-            if (_CargaVertical > 100)
+            if (_Carga > 100)
             {
                 _CargaVerticalSubiendo = false;
-                _CargaVertical = 100;
+                _Carga = 100;
             }
         }
         else
         {
-            _CargaVertical -= Time.deltaTime * _VelocidadCargaVertical;
-            if (_CargaVertical < 0)
+            _Carga -= Time.deltaTime * _VelocidadCargaVertical;
+            if (_Carga < 0)
             {
                 _CargaVerticalSubiendo = true;
-                _CargaVertical = 0;
+                _Carga = 0;
             }
         }
-        _IMGCargaVertical.fillAmount = _CargaVertical / 100;
+        _IMGCargaVertical.fillAmount = _Carga / 100;
     }
     public void InicioCargaVertical()
     {
-        _EsCargaVertical = true;
-        _CargaVertical = 0;
-        _TextoCarga.text = "";
+        if (!CargaVerticalActiva) return;
+        DebeMoverseVertical = true;
+        _Carga = 0;
     }
     public void FinCargaVertical()
     {
-        _EsCargaVertical = false;
-        _TextoCarga.text = _CargaVertical.ToString("F0");
+        if (!CargaVerticalActiva) return;
+        DebeMoverseVertical = false;
+        TextoCarga.text = "";
         _CargaVerticalSubiendo = true;
+        GuardarCargaVertical(_Carga);
+        CargaVerticalActiva = false;
+    }
+    private void GuardarCargaVertical(float cargaVertical)
+    {
+        CargaVertical = cargaVertical;
+        print(CargaVertical.ToString("F0"));
+        _Carga = 0;
     }
 }
    
