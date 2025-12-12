@@ -1,21 +1,25 @@
+using System;
+using System.Collections.Generic;
 using TMPro;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class GestorJuegoDiana: MonoBehaviour
+public class GestorJuegoDiana : MonoBehaviour
 {
     public enum EstadoJuegoDiana
     {
-        Inicio,
-        Tutorial,
-        CargaHorizontal,
-        CargaVertical,
-        AnimacionDardo,
-        Final
+        Inicio = 0,
+        Tutorial = 1,
+        CargaHorizontal = 2,
+        CargaVertical = 3,
+        AnimacionDardo = 4,
+        Final = 5
     }
 
-    public EstadoJuegoDiana EstadoActual;
-    
+    private EstadoJuegoDiana _EstadoActual = 0;
+    private EstadoJuegoDiana _EstadoAnterior = 0;
+
     [Header("Referencias")]
     [SerializeField] private CargaDardos _CargaDardos;
     [SerializeField] private GameObject _PanelTutorial;
@@ -28,43 +32,35 @@ public class GestorJuegoDiana: MonoBehaviour
     private void Start()
     {
         _PanelTutorial.SetActive(true);
-        CambiarEstado(EstadoJuegoDiana.Inicio);
+        //CambiarEstado();
     }
 
     private void Update()
     {
-        switch (EstadoActual)
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            case EstadoJuegoDiana.Inicio:
-                UpdateInicio();
-                break;
-            case EstadoJuegoDiana.Tutorial:
-                UpdateTutorial();
-                break;
-            case EstadoJuegoDiana.CargaHorizontal:
-                UpdateCargaHorizontal();
-                break;
-            case EstadoJuegoDiana.CargaVertical:
-                UpdateCargaVertical();
-                break;
-            case EstadoJuegoDiana.AnimacionDardo:
-                UpdateAnimacionDardo();
-                break;
-            case EstadoJuegoDiana.Final:
-                break;
+            SiguienteEstado();
         }
     }
 
     // ESTADOS DEL JUEGO
-    private void CambiarEstado(EstadoJuegoDiana nuevoEstado)
+    private void SiguienteEstado()
     {
-        if (nuevoEstado == EstadoActual)
+        if (_EstadoActual < EstadoJuegoDiana.Final)
+        {
+            _EstadoAnterior = _EstadoActual;
+            _EstadoActual = (EstadoJuegoDiana)((int)_EstadoActual + 1);
+            CambiarEstado();
+        }
+    }
+    private void CambiarEstado()
+    {
+        if (_EstadoActual == _EstadoAnterior)
         {
             return;
         }
-        print($"Cambiando estado de {EstadoActual} a {nuevoEstado}");
-        EstadoActual = nuevoEstado;
-        switch (EstadoActual)
+        print($"Cambiando estado de {_EstadoAnterior} a {_EstadoActual}");
+        switch (_EstadoActual)
         {
             case EstadoJuegoDiana.Inicio:
                 break;
@@ -85,78 +81,30 @@ public class GestorJuegoDiana: MonoBehaviour
                 break;
         }
     }
-    private void UpdateInicio()
-    {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            CambiarEstado(EstadoJuegoDiana.Tutorial);
-        }
-    }
     private void AlEntrarTutorial()
     {
-        PrintAlEntrar(EstadoActual);
+        PrintAlEntrar(_EstadoActual);
         _PanelTutorial.SetActive(true);
         _TiradaActual = 0;
         _TextoTirada.text = "";
     }
-    private void UpdateTutorial()
-    {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            CambiarEstado(EstadoJuegoDiana.CargaHorizontal);
-        }
-
-        // Interacción tutorial
-        // Iniciar tirada
-    }
     private void AlEntrarCargaHorizontal()
     {
-        PrintAlEntrar(EstadoActual);
+        PrintAlEntrar(_EstadoActual);
         _PanelTutorial.SetActive(false);
         _CargaDardos.CargaHorizontalActiva = true;
         _CargaDardos.TextoCarga.text = "Pulsa";
         _CargaDardos.InicioCargaHorizontal();
     }
-    private void UpdateCargaHorizontal()
-    {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            CambiarEstado(EstadoJuegoDiana.CargaVertical);
-        }
-        // Cambiar funcionalidad del botón de CargaDardos
-        // Leer y guardar valor horizontal
-    }
     private void AlEntrarCargaVertical()
     {
-        PrintAlEntrar(EstadoActual);
+        PrintAlEntrar(_EstadoActual);
         _CargaDardos.CargaVerticalActiva = true;
         _CargaDardos.TextoCarga.text = "Mantén";
     }
-    private void UpdateCargaVertical()
-    {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            CambiarEstado(EstadoJuegoDiana.AnimacionDardo);
-        }
-
-        // Cambiar botón
-        // Guardar valor vertical
-        // Finalizar tirada
-
-    }
     private void AlEntrarAnimacionDardo()
     {
-        PrintAlEntrar(EstadoActual);
-    }
-    private void UpdateAnimacionDardo()
-    {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            CambiarEstado(EstadoJuegoDiana.Final);
-        }
-
-        // Animación (temporizador opcional)
-        // Siguiente tirada
+        PrintAlEntrar(_EstadoActual);
     }
 
     // TIRADAS
@@ -180,7 +128,7 @@ public class GestorJuegoDiana: MonoBehaviour
 
     private void FinalJuegoDardos()
     {
-        PrintAlEntrar(EstadoActual);
+        PrintAlEntrar(_EstadoActual);
         print("Minijuego de dardos terminado!");
         // Mostrar resultado y cambiar de escena
     }
