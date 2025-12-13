@@ -5,6 +5,7 @@ using TMPro;
 public class CargaDardos : MonoBehaviour
 {
     [Header("Referencias")]
+    [SerializeField] private GestorJuegoDiana _GestorJuegoDiana;
     [SerializeField] private Image _IMGCargaVertical;
     [SerializeField] private Image _IMGCargaHorizontalIzquierda;
     [SerializeField] private Image _IMGCargaHorizontalDerecha;
@@ -13,25 +14,24 @@ public class CargaDardos : MonoBehaviour
     [SerializeField] private float _Carga;
 
     [Header("Carga Horizontal")]
-    public float CargaHorizontal = 0f;
+    public float[] CargaHorizontal;
     public bool CargaHorizontalActiva = false;
     public bool DebeMoverseHorizontal = false;
     [SerializeField] private bool _CargaHorizontalSubiendo = true;
     [SerializeField] private float _VelocidadCargaHorizontal = 100f;
 
     [Header("Carga Vertical")]
-    public float CargaVertical = 0f;
+    public float[] CargaVertical;
     public bool CargaVerticalActiva = false;
     public bool DebeMoverseVertical = false;
     [SerializeField] private bool _CargaVerticalSubiendo = true;
     [SerializeField] private float _VelocidadCargaVertical = 100f;
 
-    private void Start()
+    private void Awake()
     {
-        _Carga = 0f;
-        _IMGCargaVertical.fillAmount = 0f;
-        _IMGCargaHorizontalIzquierda.fillAmount = 0.48f;
-        _IMGCargaHorizontalIzquierda.fillAmount = 0.48f;
+        ReiniciarCarga();
+        CargaHorizontal = new float[_GestorJuegoDiana.TiradasMaximas];
+        CargaVertical = new float[_GestorJuegoDiana.TiradasMaximas];
     }
     private void Update()
     {
@@ -46,6 +46,14 @@ public class CargaDardos : MonoBehaviour
     }
 
     // CARGA HORIZONTAL
+    public void InicioCargaHorizontal()
+    {
+        if (!CargaHorizontalActiva) return;
+        DebeMoverseHorizontal = true;
+        _Carga = 50f;
+        _IMGCargaHorizontalIzquierda.fillAmount = (_Carga - 2f) / 100f;
+        _IMGCargaHorizontalDerecha.fillAmount = (98f - _Carga) / 100f;
+    }
     public void MovimientoCargaHorizontal()
     {
         if (!CargaHorizontalActiva) return;
@@ -70,31 +78,32 @@ public class CargaDardos : MonoBehaviour
         _IMGCargaHorizontalIzquierda.fillAmount = (_Carga - 2f) / 100f;
         _IMGCargaHorizontalDerecha.fillAmount = (98f - _Carga) / 100f;
     }
-    public void InicioCargaHorizontal()
-    {
-        if (!CargaHorizontalActiva) return;
-        DebeMoverseHorizontal = true;
-        _Carga = 50f;
-        _IMGCargaHorizontalIzquierda.fillAmount = (_Carga - 2f) / 100f;
-        _IMGCargaHorizontalDerecha.fillAmount = (98f - _Carga) / 100f;
-    }
     public void FinCargaHorizontal()
     {
+        if (_GestorJuegoDiana.EstadoActual != GestorJuegoDiana.EstadoJuegoDiana.CargaHorizontal) return;
         if (!CargaHorizontalActiva) return;
         DebeMoverseHorizontal = false;
         TextoCarga.text = "";
         _CargaHorizontalSubiendo = true;
         GuardarCargaHorizontal(_Carga);
-        CargaHorizontalActiva = false;
+        StartCoroutine(_GestorJuegoDiana.SiguienteEstado());
     }
     private void GuardarCargaHorizontal(float cargaHorizontal)
     {
-        CargaHorizontal = cargaHorizontal;
-        print(CargaHorizontal.ToString("F0"));
+        CargaHorizontal[_GestorJuegoDiana.TiradaActual-1] = cargaHorizontal;
+        print(CargaHorizontal[_GestorJuegoDiana.TiradaActual-1].ToString("F0"));
         _Carga = 0;
+        CargaHorizontalActiva = false;
     }
 
     // CARGA VERTICAL
+    public void InicioCargaVertical()
+    {
+        if (_GestorJuegoDiana.EstadoActual != GestorJuegoDiana.EstadoJuegoDiana.CargaVertical) return;
+        if (!CargaVerticalActiva) return;
+        DebeMoverseVertical = true;
+        _Carga = 0;
+    }
     public void MovimientoCargaVertical()
     {
         if (!CargaVerticalActiva) return;
@@ -119,26 +128,35 @@ public class CargaDardos : MonoBehaviour
         }
         _IMGCargaVertical.fillAmount = _Carga / 100;
     }
-    public void InicioCargaVertical()
-    {
-        if (!CargaVerticalActiva) return;
-        DebeMoverseVertical = true;
-        _Carga = 0;
-    }
     public void FinCargaVertical()
     {
+        if (_GestorJuegoDiana.EstadoActual != GestorJuegoDiana.EstadoJuegoDiana.CargaVertical) return;
         if (!CargaVerticalActiva) return;
         DebeMoverseVertical = false;
         TextoCarga.text = "";
         _CargaVerticalSubiendo = true;
         GuardarCargaVertical(_Carga);
-        CargaVerticalActiva = false;
+        StartCoroutine(_GestorJuegoDiana.SiguienteEstado());
     }
     private void GuardarCargaVertical(float cargaVertical)
     {
-        CargaVertical = cargaVertical;
-        print(CargaVertical.ToString("F0"));
-        _Carga = 0;
+        CargaVertical[_GestorJuegoDiana.TiradaActual-1] = cargaVertical;
+        print(CargaVertical[_GestorJuegoDiana.TiradaActual-1].ToString("F0"));
+        ReiniciarCarga();
+    }
+
+    private void ReiniciarCarga()
+    {
+        _Carga = 0f;
+
+        _IMGCargaHorizontalIzquierda.fillAmount = 0.48f;
+        _IMGCargaHorizontalDerecha.fillAmount = 0.48f;
+        CargaHorizontalActiva = false;
+        DebeMoverseHorizontal = false;
+
+        _IMGCargaVertical.fillAmount = 0f;
+        CargaVerticalActiva = false;
+        DebeMoverseVertical = false;
     }
 }
    

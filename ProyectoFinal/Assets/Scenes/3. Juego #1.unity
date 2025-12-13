@@ -410,6 +410,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc4fc3038966a544a8f7f462ee0ecb50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerUp
+  _GestorJuegoDiana: {fileID: 697965384}
   _IMGCargaVertical: {fileID: 1015131660}
   _IMGCargaHorizontalIzquierda: {fileID: 296054121}
   _IMGCargaHorizontalDerecha: {fileID: 1827026325}
@@ -1471,7 +1472,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2857ec78b04c5f42a9e40d2fbbb32e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GestorJuegoDiana
-  EstadoActual: 0
   _CargaDardos: {fileID: 62070190}
   _PanelTutorial: {fileID: 486531351}
   _TextoTirada: {fileID: 1355306556}

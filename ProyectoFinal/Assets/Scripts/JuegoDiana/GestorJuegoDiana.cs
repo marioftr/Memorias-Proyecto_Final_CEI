@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
+using System.Collections;
 using TMPro;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -17,7 +15,7 @@ public class GestorJuegoDiana : MonoBehaviour
         Final = 5
     }
 
-    private EstadoJuegoDiana _EstadoActual = 0;
+    public EstadoJuegoDiana EstadoActual = 0;
     private EstadoJuegoDiana _EstadoAnterior = 0;
 
     [Header("Referencias")]
@@ -26,93 +24,115 @@ public class GestorJuegoDiana : MonoBehaviour
     [SerializeField] private TMP_Text _TextoTirada;
 
     [Header("Tiradas")]
-    [SerializeField] private int _TiradasMaximas = 3;
-    [SerializeField] private int _TiradaActual;
+    public int TiradasMaximas = 3;
+    public int TiradaActual;
 
     private void Start()
     {
         _PanelTutorial.SetActive(true);
-        //CambiarEstado();
+        TiradaActual = 0;
+        _TextoTirada.text = "";
     }
 
     private void Update()
     {
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            SiguienteEstado();
+            _EstadoAnterior = EstadoActual;
+            StartCoroutine(SiguienteEstado());
         }
     }
 
-    // ESTADOS DEL JUEGO
-    private void SiguienteEstado()
+    // MODIFICAR ESTADO DEL JUEGO
+    public IEnumerator SiguienteEstado()
     {
-        if (_EstadoActual < EstadoJuegoDiana.Final)
+        if (EstadoActual < EstadoJuegoDiana.Final)
         {
-            _EstadoAnterior = _EstadoActual;
-            _EstadoActual = (EstadoJuegoDiana)((int)_EstadoActual + 1);
-            CambiarEstado();
+            yield return null;
+            EstadoActual = (EstadoJuegoDiana)((int)EstadoActual + 1);
+            CambiarEstado(EstadoActual);
         }
     }
-    private void CambiarEstado()
+    private void CambiarEstado(EstadoJuegoDiana estado)
     {
-        if (_EstadoActual == _EstadoAnterior)
+        EstadoActual = estado;
+        if (EstadoActual == _EstadoAnterior)
         {
             return;
         }
-        print($"Cambiando estado de {_EstadoAnterior} a {_EstadoActual}");
-        switch (_EstadoActual)
+        print($"Cambiando estado de {_EstadoAnterior} a {EstadoActual}");
+        switch (EstadoActual)
         {
             case EstadoJuegoDiana.Inicio:
+                AlEntrar(EstadoActual);
                 break;
             case EstadoJuegoDiana.Tutorial:
+                AlEntrar(EstadoActual);
                 AlEntrarTutorial();
                 break;
             case EstadoJuegoDiana.CargaHorizontal:
+                AlEntrar(EstadoActual);
                 AlEntrarCargaHorizontal();
                 break;
             case EstadoJuegoDiana.CargaVertical:
+                AlEntrar(EstadoActual);
                 AlEntrarCargaVertical();
                 break;
             case EstadoJuegoDiana.AnimacionDardo:
+                AlEntrar(EstadoActual);
                 AlEntrarAnimacionDardo();
                 break;
             case EstadoJuegoDiana.Final:
+                AlEntrar(EstadoActual);
                 FinalJuegoDardos();
                 break;
         }
     }
+
+    // ESTADOS DEL JUEGO
     private void AlEntrarTutorial()
     {
-        PrintAlEntrar(_EstadoActual);
         _PanelTutorial.SetActive(true);
-        _TiradaActual = 0;
+        TiradaActual = 0;
         _TextoTirada.text = "";
     }
     private void AlEntrarCargaHorizontal()
     {
-        PrintAlEntrar(_EstadoActual);
         _PanelTutorial.SetActive(false);
+        IniciarTirada();
         _CargaDardos.CargaHorizontalActiva = true;
         _CargaDardos.TextoCarga.text = "Pulsa";
         _CargaDardos.InicioCargaHorizontal();
     }
     private void AlEntrarCargaVertical()
     {
-        PrintAlEntrar(_EstadoActual);
         _CargaDardos.CargaVerticalActiva = true;
         _CargaDardos.TextoCarga.text = "Mantén";
+        // InicioCargaVertical() al mantener el botón
     }
     private void AlEntrarAnimacionDardo()
     {
-        PrintAlEntrar(_EstadoActual);
+        // Animación dardo
+        FinalizarTirada();
     }
 
     // TIRADAS
     private void IniciarTirada()
     {
-        // Comprobar tirada actual
-        // Actualizar texto tirada
-        // Cambiar estado
+        TiradaActual++;
+        _TextoTirada.text = $"{TiradaActual} / {TiradasMaximas}";
+    }
+    private void FinalizarTirada()
+    {
+        if (TiradaActual < TiradasMaximas)
+        {
+            _EstadoAnterior = EstadoActual;
+            CambiarEstado(EstadoJuegoDiana.CargaHorizontal);
+        }
+        else
+        {
+            StartCoroutine(SiguienteEstado());
+        }
     }
     private void SiguienteTirada()
     {
@@ -121,19 +141,20 @@ public class GestorJuegoDiana : MonoBehaviour
         // Sumar puntuación
         // Lanzar animación
     }
-    private void FinalizarTirada()
-    {
-
-    }
 
     private void FinalJuegoDardos()
     {
-        PrintAlEntrar(_EstadoActual);
         print("Minijuego de dardos terminado!");
-        // Mostrar resultado y cambiar de escena
+        for (int i = 0; i < TiradasMaximas; i++)
+        {
+            print($"Resultados en tirada {i+1}:\n" +
+                $"Horizontal: {_CargaDardos.CargaHorizontal[i].ToString("F0")} || Vertical: {_CargaDardos.CargaVertical[i].ToString("F0")}");
+        }
+        // Cambiar de escena
     }
-    private void PrintAlEntrar(EstadoJuegoDiana estado)
+    private void AlEntrar(EstadoJuegoDiana estado)
     {
-        print($"Estado actual: {estado}");
+        print($"Anterior: {_EstadoAnterior}. Actual: {estado}");
+        _EstadoAnterior = EstadoActual;
     }
 }
