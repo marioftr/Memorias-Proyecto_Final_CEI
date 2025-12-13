@@ -20,6 +20,7 @@ public class GestorJuegoDiana : MonoBehaviour
 
     [Header("Referencias")]
     [SerializeField] private CargaDardos _CargaDardos;
+    [SerializeField] private GameObject _PanelInicio;
     [SerializeField] private GameObject _PanelTutorial;
     [SerializeField] private TMP_Text _TextoTirada;
 
@@ -29,7 +30,7 @@ public class GestorJuegoDiana : MonoBehaviour
 
     private void Start()
     {
-        _PanelTutorial.SetActive(true);
+        CambiarPaneles();
         TiradaActual = 0;
         _TextoTirada.text = "";
     }
@@ -48,8 +49,8 @@ public class GestorJuegoDiana : MonoBehaviour
     {
         if (EstadoActual < EstadoJuegoDiana.Final)
         {
-            yield return null;
-            EstadoActual = (EstadoJuegoDiana)((int)EstadoActual + 1);
+            yield return null; // Esperar 1 frame para que no se ejecuten varios estados a la vez
+            EstadoActual = (EstadoJuegoDiana)((int)EstadoActual + 1); // Convertir enum a int, sumarle 1, volver a convertirlo a enum
             CambiarEstado(EstadoActual);
         }
     }
@@ -60,7 +61,6 @@ public class GestorJuegoDiana : MonoBehaviour
         {
             return;
         }
-        print($"Cambiando estado de {_EstadoAnterior} a {EstadoActual}");
         switch (EstadoActual)
         {
             case EstadoJuegoDiana.Inicio:
@@ -90,14 +90,22 @@ public class GestorJuegoDiana : MonoBehaviour
     }
 
     // ESTADOS DEL JUEGO
+    private void AlEntrar(EstadoJuegoDiana estado)
+    {
+        print($"Anterior: {_EstadoAnterior}\nActual: {estado}");
+        CambiarPaneles();
+        _EstadoAnterior = EstadoActual;
+    }
     private void AlEntrarTutorial()
     {
+        _PanelInicio.SetActive(false);
         _PanelTutorial.SetActive(true);
         TiradaActual = 0;
         _TextoTirada.text = "";
     }
     private void AlEntrarCargaHorizontal()
     {
+        _PanelInicio.SetActive(false);
         _PanelTutorial.SetActive(false);
         IniciarTirada();
         _CargaDardos.CargaHorizontalActiva = true;
@@ -120,28 +128,47 @@ public class GestorJuegoDiana : MonoBehaviour
     private void IniciarTirada()
     {
         TiradaActual++;
-        _TextoTirada.text = $"{TiradaActual} / {TiradasMaximas}";
+        _TextoTirada.text = $"Tiradas: {TiradaActual} / {TiradasMaximas}";
     }
     private void FinalizarTirada()
     {
         if (TiradaActual < TiradasMaximas)
         {
-            _EstadoAnterior = EstadoActual;
-            CambiarEstado(EstadoJuegoDiana.CargaHorizontal);
+            SiguienteTirada();
         }
         else
         {
             StartCoroutine(SiguienteEstado());
         }
     }
-    private void SiguienteTirada()
+    public void SiguienteTirada()
     {
-        // Leer valores de tiradas
-        // Calcular posición en la diana
-        // Sumar puntuación
-        // Lanzar animación
+        CambiarEstado(EstadoJuegoDiana.CargaHorizontal);
     }
-
+    public void IniciarTutorial()
+    {
+        CambiarEstado(EstadoJuegoDiana.Tutorial);
+    }
+    private void CambiarPaneles()
+    {
+        if(EstadoActual == EstadoJuegoDiana.Inicio)
+        {
+            _PanelInicio.SetActive(true);
+            _PanelTutorial.SetActive(false);
+            return;
+        }
+        if(EstadoActual == EstadoJuegoDiana.Tutorial)
+        {
+            _PanelInicio.SetActive(false);
+            _PanelTutorial.SetActive(true);
+            return;
+        }
+        else
+        {
+            _PanelInicio.SetActive(false);
+            _PanelTutorial.SetActive(false);
+        }
+    }
     private void FinalJuegoDardos()
     {
         print("Minijuego de dardos terminado!");
@@ -151,10 +178,5 @@ public class GestorJuegoDiana : MonoBehaviour
                 $"Horizontal: {_CargaDardos.CargaHorizontal[i].ToString("F0")} || Vertical: {_CargaDardos.CargaVertical[i].ToString("F0")}");
         }
         // Cambiar de escena
-    }
-    private void AlEntrar(EstadoJuegoDiana estado)
-    {
-        print($"Anterior: {_EstadoAnterior}. Actual: {estado}");
-        _EstadoAnterior = EstadoActual;
     }
 }
