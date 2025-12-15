@@ -95,4 +95,24 @@ public class GestorJuego : MonoBehaviour
         Screen.fullScreen = nuevoEstado;
         Debug.Log("Pantalla completa: " + nuevoEstado); // Prueba para ver si funciona la pantalla completa en el editor
     }
+
+    public static void ActivarDesactivarObjeto(GameObject objeto, bool opcion)
+    {
+        if (objeto.TryGetComponent(out Collider colision))
+        {
+            colision.enabled = opcion;
+        }
+        if(objeto.TryGetComponent(out Renderer renderer))
+        {
+            renderer.enabled = opcion;
+        }
+        if(objeto.TryGetComponent(out Light luz))
+        {
+            luz.enabled = opcion;
+        }
+        for (int i = 0; i < objeto.transform.childCount; i++)
+        {
+            ActivarDesactivarObjeto(objeto.transform.GetChild(i).gameObject, opcion);
+        }
+    }
 }
