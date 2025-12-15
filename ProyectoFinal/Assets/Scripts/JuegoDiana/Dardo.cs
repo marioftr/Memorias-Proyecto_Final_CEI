@@ -6,21 +6,24 @@ public class Dardo : MonoBehaviour
     private GestorJuegoDiana _GestorJuegoDiana;
     private CargaDardos _CargaDardos;
     private Transform _Transform;
-    public int Numero;
     private bool _Activo;
     private bool _ActivoPrevio = false;
 
-    [SerializeField] private Vector3 _PosicionInicial = new Vector3(-45, -18, 200);
-    [SerializeField] private Vector3 _RotacionInicial = new Vector3(180, -15, 0);
+    public int Numero;
+
+    private Vector3 _PosicionInicial = new Vector3(-40, -25, 150);
+    private Vector3 _RotacionInicial = new Vector3(180, -15, 0);
 
     [Header("Offset")]
-    [SerializeField] private float _OffsetRealH;
-    [SerializeField] private float _OffsetRealV;
-    [SerializeField] private float _OffsetSuaveH;
-    [SerializeField] private float _OffsetSuaveV;
-    [SerializeField] private float _OffsetMaximoH = 60f;
-    [SerializeField] private float _OffsetMaximoV = 100f;
-    [SerializeField] private float _VelocidadSuavizado;
+    private float _OffsetSuaveH;
+    private float _OffsetSuaveV;
+    private float _OffsetRealH;
+    private float _OffsetRealV;
+    private float _OffsetMaximoH;
+    private float _OffsetMaximoV;
+    private float _VelocidadSuavizado;
+    private float _BaseVerticalX;
+    private float _BaseVerticalY;
 
     private void Awake()
     {
@@ -33,6 +36,8 @@ public class Dardo : MonoBehaviour
         _Transform.position = _PosicionInicial;
         _Transform.eulerAngles = _RotacionInicial;
         _VelocidadSuavizado = 5f;
+        _OffsetMaximoH = 60f;
+        _OffsetMaximoV = 30f;
     }
     private void Update()
     {
@@ -41,12 +46,6 @@ public class Dardo : MonoBehaviour
         {
             ActivarDesactivarDardo(_Activo); // Cambia su estado
             _ActivoPrevio = _Activo; // Guarda su estado para no volver a cambiarlo
-            if (_Activo)
-            {
-                _OffsetSuaveH = 0f; // Reinicia el suavizado si el dardo se acaba de activar
-                _OffsetSuaveV = -1f;
-                print($"Movimiento {Numero}");
-            }
         }
         if (!_Activo) return;
         MovimientoDardo();
@@ -58,15 +57,23 @@ public class Dardo : MonoBehaviour
             _OffsetRealH = (_CargaDardos.Carga - 50f) / 50f; // -1 (-50)... 0 ... +1 (+50)
             _OffsetSuaveH = Mathf.Lerp(_OffsetSuaveH, _OffsetRealH, _VelocidadSuavizado * Time.deltaTime); // Dardo sigue el nivel de Carga
             _Transform.position = _PosicionInicial + new Vector3(_OffsetSuaveH * _OffsetMaximoH, 0, 0);
-            return;
         }
         if (_GestorJuegoDiana.EstadoActual == GestorJuegoDiana.EstadoJuegoDiana.CargaVertical)
         {
-            _OffsetRealV = (_CargaDardos.Carga / 50f); // 0 (0) ... +1 (+50) ... +2 (+100)
+            _OffsetRealV = (_CargaDardos.Carga / 100f); // -1 (0) ... 0 (+50) ... +1 (+100)
             _OffsetSuaveV = Mathf.Lerp(_OffsetSuaveV, _OffsetRealV, _VelocidadSuavizado * Time.deltaTime);
-            _Transform.position = _PosicionInicial + new Vector3(_OffsetSuaveH*_OffsetMaximoH, _OffsetSuaveV * _OffsetMaximoV, 0);
-            return;
+            _Transform.position = new Vector3(_BaseVerticalX, _BaseVerticalY + _OffsetSuaveV * _OffsetMaximoV, _Transform.position.z);
         }
+    }
+    public void PrepararHorizontal()
+    {
+        _OffsetSuaveH = 0f;
+    }
+    public void PrepararVertical()
+    {
+        _OffsetSuaveV = 0f;
+        _BaseVerticalX = _Transform.position.x;
+        _BaseVerticalY = _Transform.position.y;
     }
     public void DefinirDardo(int numero)
     {

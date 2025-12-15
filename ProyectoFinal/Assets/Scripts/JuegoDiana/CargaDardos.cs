@@ -151,7 +151,6 @@ public class CargaDardos : MonoBehaviour
         CargaVerticalNormalizada[_GestorJuegoDiana.TiradaActual - 1] = (cargaVertical - 50) / 50;
         ReiniciarCarga();
     }
-
     private void ReiniciarCarga()
     {
         Carga = 0f;

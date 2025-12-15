@@ -126,12 +126,14 @@ public class GestorJuegoDiana : MonoBehaviour
         IniciarTirada();
         _CargaDardos.CargaHorizontalActiva = true;
         _CargaDardos.TextoCarga.text = "Pulsa";
+        _DardosCreados[TiradaActual - 1].PrepararHorizontal();
         _CargaDardos.InicioCargaHorizontal();
     }
     private void AlEntrarCargaVertical()
     {
         _CargaDardos.CargaVerticalActiva = true;
         _CargaDardos.TextoCarga.text = "Mantén";
+        _DardosCreados[TiradaActual-1].PrepararVertical();
         // InicioCargaVertical() al mantener el botón
     }
     private void AlEntrarAnimacionDardo()
@@ -168,38 +170,10 @@ public class GestorJuegoDiana : MonoBehaviour
     }
     private void CambiarPaneles()
     {
-        if(EstadoActual == EstadoJuegoDiana.Inicio)
-        {
-            _PanelInicio.SetActive(true);
-            _PanelTutorial.SetActive(false);
-            _PanelJuego.SetActive(false);
-            _PanelFinal.SetActive(false);
-            return;
-        }
-        if(EstadoActual == EstadoJuegoDiana.Tutorial)
-        {
-            _PanelInicio.SetActive(false);
-            _PanelTutorial.SetActive(true);
-            _PanelJuego.SetActive(false);
-            _PanelFinal.SetActive(false);
-            return;
-        }
-        if(EstadoActual == EstadoJuegoDiana.Final)
-        {
-            _PanelInicio.SetActive(false);
-            _PanelTutorial.SetActive(false);
-            _PanelJuego.SetActive(false);
-            _PanelFinal.SetActive(true);
-            return;
-        }
-        else
-        {
-            _PanelInicio.SetActive(false);
-            _PanelTutorial.SetActive(false);
-            _PanelJuego.SetActive(true);
-            _PanelFinal.SetActive(false);
-            return;
-        }
+        _PanelInicio.SetActive(EstadoActual == EstadoJuegoDiana.Inicio);
+        _PanelTutorial.SetActive(EstadoActual == EstadoJuegoDiana.Tutorial);
+        _PanelJuego.SetActive(EstadoActual == EstadoJuegoDiana.CargaHorizontal || EstadoActual == EstadoJuegoDiana.CargaVertical);
+        _PanelFinal.SetActive(EstadoActual == EstadoJuegoDiana.Final);
     }
     private void FinalJuegoDardos()
     {
@@ -207,8 +181,7 @@ public class GestorJuegoDiana : MonoBehaviour
         StringBuilder textoResultados = new StringBuilder();
         for (int i = 0; i < TiradasMaximas; i++)
         {
-            print($"Resultados en tirada {i+1}:\n" +
-                $"Horizontal: {_CargaDardos.CargaHorizontal[i].ToString("F0")} || Vertical: {_CargaDardos.CargaVertical[i].ToString("F0")}");
+            //print($"Resultados en tirada {i+1}:\nHorizontal: {_CargaDardos.CargaHorizontal[i].ToString("F0")} || Vertical: {_CargaDardos.CargaVertical[i].ToString("F0")}");
             textoResultados.AppendLine($"TIRADA {i+1}: Horizontal: {_CargaDardos.CargaHorizontal[i].ToString("F0")} || Vertical: {_CargaDardos.CargaVertical[i].ToString("F0")}");
         }
         _TextoResultados.text = textoResultados.ToString();
