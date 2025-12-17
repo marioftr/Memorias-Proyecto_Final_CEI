@@ -66,7 +66,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 4e43e11350147c241909654a63f4a080, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 4e43e11350147c241909654a63f4a080, type: 3}
       propertyPath: m_Name
@@ -80,11 +80,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 7144575842803464112}
   m_SourcePrefab: {fileID: 100100000, guid: 4e43e11350147c241909654a63f4a080, type: 3}
---- !u!4 &5005124162310943883 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4e43e11350147c241909654a63f4a080, type: 3}
-  m_PrefabInstance: {fileID: 4827714305929106272}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &5637967169040215601 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4e43e11350147c241909654a63f4a080, type: 3}
@@ -102,14 +97,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4feae804c634c8443aa6b827b56c1025, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Dardo
-  _Transform: {fileID: 5005124162310943883}
   Numero: 0
-  _OffsetSuaveH: 0
-  _OffsetSuaveV: 0
-  _OffsetRealH: 0
-  _OffsetRealV: 0
-  _OffsetMaximoH: 60
-  _OffsetMaximoV: 30
-  _VelocidadSuavizado: 0
-  _BaseVerticalX: -45
-  _BaseVerticalY: 0

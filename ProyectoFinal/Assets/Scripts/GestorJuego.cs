@@ -28,6 +28,10 @@ public class GestorJuego : MonoBehaviour
     {
         SceneManager.LoadScene(id);
     }
+    public static void RecargarEscena()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
     public static void Salir()
     {
 #if UNITY_EDITOR

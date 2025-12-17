@@ -97,7 +97,7 @@ public class CargaDardos : MonoBehaviour
     {
         CargaHorizontal[_GestorJuegoDiana.TiradaActual - 1] = cargaHorizontal;
         print(CargaHorizontal[_GestorJuegoDiana.TiradaActual - 1].ToString("F0"));
-        CargaHorizontalNormalizada[_GestorJuegoDiana.TiradaActual - 1] = (cargaHorizontal - 50) / 50;
+        CargaHorizontalNormalizada[_GestorJuegoDiana.TiradaActual - 1] = (cargaHorizontal - 50) / 50; // X normalizada (-1 a +1)
         Carga = 0;
         CargaHorizontalActiva = false;
     }
@@ -148,7 +148,7 @@ public class CargaDardos : MonoBehaviour
     {
         CargaVertical[_GestorJuegoDiana.TiradaActual - 1] = cargaVertical;
         print(CargaVertical[_GestorJuegoDiana.TiradaActual - 1].ToString("F0"));
-        CargaVerticalNormalizada[_GestorJuegoDiana.TiradaActual - 1] = (cargaVertical - 50) / 50;
+        CargaVerticalNormalizada[_GestorJuegoDiana.TiradaActual - 1] = (cargaVertical - 50) / 50; // Y normalizada (-1 a +1)
         ReiniciarCarga();
     }
     private void ReiniciarCarga()

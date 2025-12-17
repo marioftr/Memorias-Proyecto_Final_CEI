@@ -1,9 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TMPro;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class GestorJuegoDiana : MonoBehaviour
 {
@@ -18,33 +21,52 @@ public class GestorJuegoDiana : MonoBehaviour
     }
 
     public EstadoJuegoDiana EstadoActual = 0;
-    private EstadoJuegoDiana _EstadoAnterior = 0;
+    public EstadoJuegoDiana EstadoAnterior = 0;
 
     [Header("Referencias")]
-    [SerializeField] private CargaDardos _CargaDardos;
+    private CargaDardos _CargaDardos;
+    private Mira _Mira;
+    private AnimacionDardo _AnimacionDardo;
+    private GestorResultados _GestorResultados;
+
     [SerializeField] private Dardo _Dardo;
+    [SerializeField] private CinemachineCamera _VCamJuego;
+    [SerializeField] private CinemachineCamera _VCamFinal;
+
     [SerializeField] private GameObject _PanelInicio;
     [SerializeField] private GameObject _PanelTutorial;
     [SerializeField] private GameObject _PanelJuego;
     [SerializeField] private GameObject _PanelFinal;
     [SerializeField] private TMP_Text _TextoTirada;
     [SerializeField] private TMP_Text _TextoResultados;
+    [SerializeField] private TMP_Text _TextoTotal;
+    [SerializeField] private TMP_Text _TextoRecord;
+    [SerializeField] private Button _BotonGuardarRecord;
+
+    public int RecordDiana;
 
     [Header("Tiradas")]
     public int TiradasMaximas = 3;
     public int TiradaActual;
+    private int[] _Resultados;
+    private int _ResultadoFinal;
 
     [Header("Dardos")]
     [SerializeField] private List<Dardo> _DardosCreados;
-    [SerializeField] private int _DardoActual;
 
     private void Awake()
     {
         _CargaDardos = FindAnyObjectByType<CargaDardos>();
+        _Mira = FindAnyObjectByType<Mira>();
+        _AnimacionDardo = FindAnyObjectByType<AnimacionDardo>();
+        _GestorResultados = FindAnyObjectByType<GestorResultados>();
         _DardosCreados = new();
+        _Resultados = new int[TiradasMaximas];
     }
     private void Start()
     {
+        _VCamJuego.Priority = 10;
+        _VCamFinal.Priority = 0;
         CambiarPaneles();
         CrearDardos();
         TiradaActual = 0;
@@ -55,7 +77,7 @@ public class GestorJuegoDiana : MonoBehaviour
     {
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            _EstadoAnterior = EstadoActual;
+            EstadoAnterior = EstadoActual;
             StartCoroutine(SiguienteEstado());
         }
     }
@@ -73,7 +95,7 @@ public class GestorJuegoDiana : MonoBehaviour
     private void CambiarEstado(EstadoJuegoDiana estado)
     {
         EstadoActual = estado;
-        if (EstadoActual == _EstadoAnterior)
+        if (EstadoActual == EstadoAnterior)
         {
             return;
         }
@@ -81,22 +103,27 @@ public class GestorJuegoDiana : MonoBehaviour
         {
             case EstadoJuegoDiana.Inicio:
                 AlEntrar(EstadoActual);
+                EstadoAnterior = EstadoActual;
                 break;
             case EstadoJuegoDiana.Tutorial:
                 AlEntrar(EstadoActual);
                 AlEntrarTutorial();
+                EstadoAnterior = EstadoActual;
                 break;
             case EstadoJuegoDiana.CargaHorizontal:
                 AlEntrar(EstadoActual);
                 AlEntrarCargaHorizontal();
+                EstadoAnterior = EstadoActual;
                 break;
             case EstadoJuegoDiana.CargaVertical:
                 AlEntrar(EstadoActual);
                 AlEntrarCargaVertical();
+                EstadoAnterior = EstadoActual;
                 break;
             case EstadoJuegoDiana.AnimacionDardo:
                 AlEntrar(EstadoActual);
                 AlEntrarAnimacionDardo();
+                EstadoAnterior = EstadoActual;
                 break;
             case EstadoJuegoDiana.Final:
                 AlEntrar(EstadoActual);
@@ -108,24 +135,20 @@ public class GestorJuegoDiana : MonoBehaviour
     // ESTADOS DEL JUEGO
     private void AlEntrar(EstadoJuegoDiana estado)
     {
-        print($"Anterior: {_EstadoAnterior}\nActual: {estado}");
+        print($"Anterior: {EstadoAnterior}\nActual: {estado}");
         CambiarPaneles();
-        _EstadoAnterior = EstadoActual;
     }
     private void AlEntrarTutorial()
     {
-        _PanelInicio.SetActive(false);
-        _PanelTutorial.SetActive(true);
         TiradaActual = 0;
         _TextoTirada.text = "";
     }
     private void AlEntrarCargaHorizontal()
     {
-        _PanelInicio.SetActive(false);
-        _PanelTutorial.SetActive(false);
         IniciarTirada();
         _CargaDardos.CargaHorizontalActiva = true;
         _CargaDardos.TextoCarga.text = "Pulsa";
+        _Mira.ReiniciarHorizontal();
         _DardosCreados[TiradaActual - 1].PrepararHorizontal();
         _CargaDardos.InicioCargaHorizontal();
     }
@@ -133,13 +156,32 @@ public class GestorJuegoDiana : MonoBehaviour
     {
         _CargaDardos.CargaVerticalActiva = true;
         _CargaDardos.TextoCarga.text = "Mantén";
-        _DardosCreados[TiradaActual-1].PrepararVertical();
+        _Mira.ReiniciarVertical();
+        _DardosCreados[TiradaActual - 1].PrepararVertical();
         // InicioCargaVertical() al mantener el botón
     }
     private void AlEntrarAnimacionDardo()
     {
-        // Animación dardo
-        FinalizarTirada();
+        StartCoroutine(_AnimacionDardo.AnimacionCompleta());
+    }
+    private void FinalJuegoDardos()
+    {
+        print("Minijuego de dardos terminado!");
+        _VCamJuego.Priority = 0;
+        _VCamFinal.Priority = 10;
+        CalcularResultados();
+        _BotonGuardarRecord.interactable = _ResultadoFinal > PlayerPrefs.GetInt("Record");
+        StringBuilder textoResultados = new StringBuilder();
+        for (int i = 0; i < TiradasMaximas; i++)
+        {
+            print($"Resultados en tirada {i + 1}:\nHorizontal: {_CargaDardos.CargaHorizontal[i].ToString("F0")} || Vertical: {_CargaDardos.CargaVertical[i].ToString("F0")}");
+            //textoResultados.AppendLine($"TIRADA {i + 1}: Horizontal: {_CargaDardos.CargaHorizontal[i].ToString("F0")} || Vertical: {_CargaDardos.CargaVertical[i].ToString("F0")}");
+            textoResultados.AppendLine($"TIRADA {i + 1}: {_Resultados[i]} puntos.");
+        }
+        _TextoResultados.text = textoResultados.ToString();
+        _TextoTotal.text = $"{_ResultadoFinal} puntos.";
+        _TextoRecord.text = $"{PlayerPrefs.GetInt("Record")} puntos.";
+        // Cambiar de escena
     }
 
     // TIRADAS
@@ -147,9 +189,8 @@ public class GestorJuegoDiana : MonoBehaviour
     {
         TiradaActual++;
         _TextoTirada.text = $"Tiradas: {TiradaActual} / {TiradasMaximas}";
-        CalcularDardoActual();
     }
-    private void FinalizarTirada()
+    public void FinalizarTirada()
     {
         if (TiradaActual < TiradasMaximas)
         {
@@ -168,34 +209,11 @@ public class GestorJuegoDiana : MonoBehaviour
     {
         CambiarEstado(EstadoJuegoDiana.Tutorial);
     }
-    private void CambiarPaneles()
-    {
-        _PanelInicio.SetActive(EstadoActual == EstadoJuegoDiana.Inicio);
-        _PanelTutorial.SetActive(EstadoActual == EstadoJuegoDiana.Tutorial);
-        _PanelJuego.SetActive(EstadoActual == EstadoJuegoDiana.CargaHorizontal || EstadoActual == EstadoJuegoDiana.CargaVertical);
-        _PanelFinal.SetActive(EstadoActual == EstadoJuegoDiana.Final);
-    }
-    private void FinalJuegoDardos()
-    {
-        print("Minijuego de dardos terminado!");
-        StringBuilder textoResultados = new StringBuilder();
-        for (int i = 0; i < TiradasMaximas; i++)
-        {
-            //print($"Resultados en tirada {i+1}:\nHorizontal: {_CargaDardos.CargaHorizontal[i].ToString("F0")} || Vertical: {_CargaDardos.CargaVertical[i].ToString("F0")}");
-            textoResultados.AppendLine($"TIRADA {i+1}: Horizontal: {_CargaDardos.CargaHorizontal[i].ToString("F0")} || Vertical: {_CargaDardos.CargaVertical[i].ToString("F0")}");
-        }
-        _TextoResultados.text = textoResultados.ToString();
-        // Cambiar de escena
-    }
 
     // DARDOS
-    private void CalcularDardoActual()
-    {
-        _DardoActual = TiradaActual;
-    }
     private void CrearDardos()
     {
-        for (int i = 0;i < TiradasMaximas; i++)
+        for (int i = 0; i < TiradasMaximas; i++)
         {
             Dardo nuevoDardo = Instantiate(_Dardo);
             _DardosCreados.Add(nuevoDardo);
@@ -205,15 +223,49 @@ public class GestorJuegoDiana : MonoBehaviour
     }
     private void DefinirDardos()
     {
-        if(_DardosCreados.Count == 0)
+        if (_DardosCreados.Count == 0)
         {
             print("No hay dardos creados");
             return;
         }
-        for (int i = 0; i<_DardosCreados.Count ; i++)
+        for (int i = 0; i < _DardosCreados.Count; i++)
         {
             _DardosCreados[i].DefinirDardo(i);
         }
     }
 
+    // CÁLCULOS ETC
+    private void CambiarPaneles()
+    {
+        _PanelInicio.SetActive(EstadoActual == EstadoJuegoDiana.Inicio);
+        _PanelTutorial.SetActive(EstadoActual == EstadoJuegoDiana.Tutorial);
+        _PanelJuego.SetActive(EstadoActual == EstadoJuegoDiana.CargaHorizontal || EstadoActual == EstadoJuegoDiana.CargaVertical);
+        _PanelFinal.SetActive(EstadoActual == EstadoJuegoDiana.Final);
+    }
+    private void CalcularResultados()
+    {
+        for (int i = 0; i < TiradasMaximas; i++)
+        {
+            _Resultados[i] = _GestorResultados.CalcularPuntosTirada(i);
+
+            // Log para depurar
+            Vector3 pos = _AnimacionDardo.DardosClavados[i].position;
+            float dist = Vector3.Distance(pos, _GestorResultados._CentroDiana.position);
+            Debug.Log($"Tirada {i + 1}: distanciaWorld={dist:F2}, radio={dist / _GestorResultados._RadioRealDiana:F3}, pts={_Resultados[i]}");
+        }
+        _ResultadoFinal = _Resultados.Sum();
+    }
+    public void JugarOtraVez()
+    {
+        GestorJuego.RecargarEscena();
+    }
+    public void Salir()
+    {
+        GestorJuego.Salir();
+    }
+    public void GuardarRecord()
+    {
+        PlayerPrefs.SetInt("Record", _ResultadoFinal);
+        _TextoRecord.text = $"{_ResultadoFinal} puntos.";
+    }
 }

@@ -15,10 +15,10 @@ public class Dardo : MonoBehaviour
     private Vector3 _RotacionInicial = new Vector3(180, -15, 0);
 
     [Header("Offset")]
-    private float _OffsetSuaveH;
-    private float _OffsetSuaveV;
     private float _OffsetRealH;
     private float _OffsetRealV;
+    private float _OffsetSuaveH;
+    private float _OffsetSuaveV;
     private float _OffsetMaximoH;
     private float _OffsetMaximoV;
     private float _VelocidadSuavizado;
@@ -36,8 +36,8 @@ public class Dardo : MonoBehaviour
         _Transform.position = _PosicionInicial;
         _Transform.eulerAngles = _RotacionInicial;
         _VelocidadSuavizado = 5f;
-        _OffsetMaximoH = 60f;
-        _OffsetMaximoV = 30f;
+        _OffsetMaximoH = 50f;
+        _OffsetMaximoV = 80f;
     }
     private void Update()
     {
